@@ -52,11 +52,11 @@ var storageModuleInterface = {
             }
             return storageModule.init(settings);
         },
-        getFlows: function() {
-            return storageModule.getFlows();
+        getFlows: function(user) {
+            return storageModule.getFlows(user);
         },
-        saveFlows: function(flows) {
-            return storageModule.saveFlows(flows);
+        saveFlows: function(flows, user) {
+            return storageModule.saveFlows(flows, user);
         },
         getCredentials: function() {
             return storageModule.getCredentials();

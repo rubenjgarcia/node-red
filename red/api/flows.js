@@ -26,14 +26,14 @@ module.exports = {
     },
     get: function(req,res) {
         log.audit({event: "flows.get"},req);
-        res.json(redNodes.getFlows());
+        res.json(redNodes.getFlows(req.user && req.user.username));
     },
     post: function(req,res) {
         var flows = req.body;
         var deploymentType = req.get("Node-RED-Deployment-Type")||"full";
         log.audit({event: "flows.set",type:deploymentType},req);
         if (deploymentType === 'reload') {
-            redNodes.loadFlows().then(function() {
+            redNodes.loadFlows(req.user && req.user.username).then(function() {
                 res.status(204).end();
             }).otherwise(function(err) {
                 log.warn(log._("api.flows.error-reload",{message:err.message}));
@@ -41,7 +41,7 @@ module.exports = {
                 res.status(500).json({error:"unexpected_error", message:err.message});
             });
         } else {
-            redNodes.setFlows(flows,deploymentType).then(function() {
+            redNodes.setFlows(flows,deploymentType,null,req.user && req.user.username).then(function() {
                 res.status(204).end();
             }).otherwise(function(err) {
                 log.warn(log._("api.flows.error-save",{message:err.message}));

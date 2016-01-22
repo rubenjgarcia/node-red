@@ -66,8 +66,9 @@ function init(_settings, _storage) {
         typeEventRegistered = true;
     }
 }
-function load() {
-    return storage.getFlows().then(function(flows) {
+function load(user) {
+    log.trace("Loading " + (user ? ("flows for user " + user) : "default flows"));
+    return storage.getFlows(user).then(function(flows) {
         return credentials.load().then(function() {
             return setConfig(flows,"load");
         });
@@ -77,7 +78,7 @@ function load() {
     });
 }
 
-function setConfig(_config,type,muteLog) {
+function setConfig(_config,type,muteLog,user) {
     var config = clone(_config);
     type = type||"full";
 
@@ -106,7 +107,7 @@ function setConfig(_config,type,muteLog) {
         type = 'full';
     } else {
         configSavePromise = credentialSavePromise.then(function() {
-            return storage.saveFlows(config);
+            return storage.saveFlows(config,user);
         });
     }
 

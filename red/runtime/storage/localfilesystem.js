@@ -190,14 +190,23 @@ var localfilesystem = {
         return when.all(promises);
     },
 
-    getFlows: function() {
+    getFlows: function(user) {
         return when.promise(function(resolve) {
             if (!initialFlowLoadComplete) {
                 initialFlowLoadComplete = true;
                 log.info(log._("storage.localfilesystem.user-dir",{path:settings.userDir}));
                 log.info(log._("storage.localfilesystem.flows-file",{path:flowsFullPath}));
             }
-            fs.readFile(flowsFullPath,'utf8',function(err,data) {
+
+            var flowsPath = flowsFullPath;
+            if (user) {
+                var ffDir = fspath.dirname(flowsFullPath);
+                var ffName = fspath.basename(flowsFullPath);
+                fs.mkdirsSync(fspath.join(ffDir, 'user', user));
+                flowsPath = fspath.join(ffDir, 'user', user, ffName);
+            }
+
+            fs.readFile(flowsPath,'utf8',function(err,data) {
                 if (!err) {
                     return resolve(JSON.parse(data));
                 }
@@ -207,13 +216,21 @@ var localfilesystem = {
         });
     },
 
-    saveFlows: function(flows) {
+    saveFlows: function(flows, user) {
         if (settings.readOnly) {
             return when.resolve();
         }
 
+        var flowsPath = flowsFullPath;
+        if (user) {
+            var ffDir = fspath.dirname(flowsFullPath);
+            var ffName = fspath.basename(flowsFullPath);
+            fs.mkdirsSync(fspath.join(ffDir, 'user', user));
+            flowsPath = fspath.join(ffDir, 'user', user, ffName);
+        }
+
         try {
-            fs.renameSync(flowsFullPath,flowsFileBackup);
+            fs.renameSync(flowsPath,flowsFileBackup);
         } catch(err) {
         }
 
@@ -224,7 +241,7 @@ var localfilesystem = {
         } else {
             flowData = JSON.stringify(flows);
         }
-        return writeFile(flowsFullPath, flowData);
+        return writeFile(flowsPath, flowData);
     },
 
     getCredentials: function() {

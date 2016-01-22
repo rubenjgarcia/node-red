@@ -27,6 +27,7 @@ var Clients = require("./clients");
 var permissions = require("./permissions");
 
 var log;
+var redNodes;
 
 var bearerStrategy = function (accessToken, done) {
     // is this a valid token?
@@ -94,6 +95,7 @@ var passwordTokenExchange = function(client, username, password, scope, done) {
                 });
                 Tokens.create(username,client.id,scope).then(function(tokens) {
                     log.audit({event: "auth.login",username:username,client:client.id,scope:scope});
+                    redNodes.loadFlows(username).then(redNodes.startFlows);
                     done(null,tokens.accessToken,null,{expires_in:tokens.expires_in});
                 });
             } else {
@@ -125,6 +127,7 @@ AnonymousStrategy.prototype.authenticate = function(req) {
 
 module.exports = {
     init: function(runtime) {
+        redNodes = runtime.nodes;
         log = runtime.log;
     },
     bearerStrategy: bearerStrategy,

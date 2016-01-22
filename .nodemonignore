@@ -3,3 +3,4 @@
 /lib/*
 *.backup
 /public/*
+/node_modules/*
